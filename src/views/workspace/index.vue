@@ -491,12 +491,17 @@ const submitCreateDirectory = async () => {
     // 从缓存中移除当前节点，以便重新加载
     loadedNodes.value.delete(selectedNode.value.id)
 
-    // 重新加载该节点的子节点
-    await loadNodeChildren(selectedNode.value.id)
-
-    // 如果当前节点未展开，则展开它
+    // 确保父节点展开
     if (!expandedKeys.value.includes(selectedNode.value.id)) {
-      expandedKeys.value.push(selectedNode.value.id)
+      expandedKeys.value = [...expandedKeys.value, selectedNode.value.id]
+    }
+
+    // 重新加载该节点的子节点
+    const children = await loadNodeChildren(selectedNode.value.id)
+
+    // 更新父节点的子节点数量
+    if (selectedNode.value.item) {
+      selectedNode.value.item.children_count = (selectedNode.value.item.children_count || 0) + 1
     }
   } catch (error) {
     console.error('创建服务目录失败', error)
@@ -535,12 +540,17 @@ const submitCreateFunction = async () => {
     // 从缓存中移除当前节点，以便重新加载
     loadedNodes.value.delete(selectedNode.value.id)
 
-    // 重新加载该节点的子节点
-    await loadNodeChildren(selectedNode.value.id)
-
-    // 如果当前节点未展开，则展开它
+    // 确保父节点展开
     if (!expandedKeys.value.includes(selectedNode.value.id)) {
-      expandedKeys.value.push(selectedNode.value.id)
+      expandedKeys.value = [...expandedKeys.value, selectedNode.value.id]
+    }
+
+    // 重新加载该节点的子节点
+    const children = await loadNodeChildren(selectedNode.value.id)
+
+    // 更新父节点的子节点数量
+    if (selectedNode.value.item) {
+      selectedNode.value.item.children_count = (selectedNode.value.item.children_count || 0) + 1
     }
   } catch (error) {
     console.error('创建云函数失败', error)
@@ -548,6 +558,28 @@ const submitCreateFunction = async () => {
   } finally {
     creatingFunc.value = false
   }
+}
+
+// 更新节点的子节点数量
+const updateNodeChildrenCount = (nodeId: number, increment: number = 1) => {
+  const updateCount = (nodes: TreeNodeData[]): boolean => {
+    for (const node of nodes) {
+      if (node.id === nodeId) {
+        if (node.item) {
+          node.item.children_count = (node.item.children_count || 0) + increment
+        }
+        return true
+      }
+      if (node.children && node.children.length > 0) {
+        if (updateCount(node.children)) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
+  updateCount(treeData.value)
 }
 
 // 监听路由变化，重新加载工作空间信息
@@ -646,6 +678,7 @@ onMounted(async () => {
           node-key="id"
           :current-node-key="currentNodeKey || undefined"
           :default-expanded-keys="expandedKeys"
+          :expanded-keys="expandedKeys"
           :load="loadNode"
           lazy
           @node-click="handleNodeClick"
