@@ -1,9 +1,8 @@
 ---
-description:
+description: 这里是后端的一些可以用的接口
 globs:
 alwaysApply: true
 ---
-
 ***
 接口名称：创建工作空间
 接口描述：创建工作空间成功后返回的数据中包含tree_id，可以根据tree_id来获取工作空间的子目录（刚创建完成里面没有子目录）

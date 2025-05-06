@@ -1,14 +1,14 @@
 ---
-description: 
-globs: 
-alwaysApply: false
+description: 开发要求
+globs:
+alwaysApply: true
 ---
 要求用ts开发
 硬性要求
 禁止胡编乱造的去自己生成后端api的调用，api调用严格参考src/api目录下的接口进行调用
 
 
-src/api/api.md 这个里面我打算维护一下后端有哪些api，具体是干嘛的，怎么调用，请求参数和响应参数都会告诉你，不要自己乱生成API调用，
+src/api/api.mdc 这个里面我打算维护一下后端有哪些api，具体是干嘛的，怎么调用，请求参数和响应参数都会告诉你，不要自己乱生成API调用，
 
 禁止禁止禁止（重要的事情说三遍）
 我让你干嘛你就干嘛，不要生成不相干的代码，只做我要求的功能即可
