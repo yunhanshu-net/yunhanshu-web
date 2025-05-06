@@ -1,0 +1,340 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+***
+接口名称：创建工作空间
+接口描述：创建工作空间成功后返回的数据中包含tree_id，可以根据tree_id来获取工作空间的子目录（刚创建完成里面没有子目录）
+```json
+method: post
+地址：http://127.0.0.1:8080/api/v1/runner
+请求body示例：
+{
+"title":"清华大学科研常用工具库2",
+"name":"qinghuaTools1",
+"description":"清华大学科研常用工具库，包括物理，化学，生物，历史，等等"
+}
+
+响应body示例：
+{
+"code": 0,
+"msg": "成功",
+"data": {
+    "id": 7,
+    "created_at": "2025-05-06 15:43:47",
+    "updated_at": "2025-05-06 15:43:47",
+    "created_by": "beiluo",
+    "updated_by": "beiluo",
+    "deleted_by": "",
+    "title": "清华大学科研常用工具库2",
+    "name": "qinghuaTools1",
+    "description": "清华大学科研常用工具库，包括物理，化学，生物，历史，等等",
+    "version": "",
+    "language": "",
+    "status": 1,
+    "runcher_id": null,
+    "is_public": false,
+    "tags": "",
+    "tree_id": 21,
+    "fork_from_version": "",
+    "fork_from_id": null,
+    "user": "beiluo"
+  }
+}
+
+
+```
+
+获取当前用户工作空间列表
+可以用这个接口来进行工作空间的切换
+
+```json
+
+method: get
+地址：http://127.0.0.1:8080/api/v1/runner
+请求body示例：
+{
+"title":"清华大学科研常用工具库2",
+"name":"qinghuaTools1",
+"description":"清华大学科研常用工具库，包括物理，化学，生物，历史，等等"
+}
+
+响应body示例：
+{
+"code": 0,
+"msg": "成功",
+"data": {
+"items": [
+    {
+    "id": 2,
+    "created_at": "2025-05-05 20:01:12",
+    "updated_at": "2025-05-05 20:01:12",
+    "created_by": "beiluo",
+    "updated_by": "beiluo",
+    "deleted_by": "",
+    "title": "清华大学科研常用工具库",
+    "name": "qinghuaTools",
+    "description": "清华大学科研常用工具库，包括物理，化学，生物，历史，等等",
+    "version": "",
+    "language": "",
+    "status": 1,
+    "runcher_id": null,
+    "is_public": false,
+    "tags": "",
+    "tree_id": 2,
+    "fork_from_version": "",
+    "fork_from_id": null,
+    "user": "beiluo"
+    },
+    {
+    "id": 3,
+    "created_at": "2025-05-05 20:21:22",
+    "updated_at": "2025-05-05 20:21:22",
+    "created_by": "beiluo",
+    "updated_by": "beiluo",
+    "deleted_by": "",
+    "title": "北京大学常用函数库",
+    "name": "beijingdaxueTools",
+    "description": "测试测试",
+    "version": "",
+    "language": "",
+    "status": 1,
+    "runcher_id": null,
+    "is_public": false,
+    "tags": "",
+    "tree_id": 3,
+    "fork_from_version": "",
+    "fork_from_id": null,
+    "user": "beiluo"
+    }
+  ],
+"current_page": 1,
+"total_count": 6,
+"total_pages": 1,
+"page_size": 20
+}
+}
+```
+
+接口名称：根据user和name获取工作空间信息
+这里的user和name可以从前端的路由里去取
+参考下面的这个前端路由，在workspace页面中beiluo是用户qinghuaTools是工作空间的名称
+http://localhost:3000/workspace/beiluo/qinghuaTools
+api/v1/runner/by-name/:user/:name
+```json
+method：get
+地址：http://127.0.0.1:8080/api/v1/runner/by-name/:user/:name
+
+
+响应示例：
+{
+"code": 0,
+"msg": "成功",
+"data": {
+"id": 2,
+"created_at": "2025-05-05 20:01:12",
+"updated_at": "2025-05-05 20:01:12",
+"created_by": "beiluo",
+"updated_by": "beiluo",
+"deleted_by": "",
+"title": "清华大学科研常用工具库",
+"name": "qinghuaTools",
+"description": "清华大学科研常用工具库，包括物理，化学，生物，历史，等等",
+"version": "",
+"language": "",
+"status": 1,
+"runcher_id": null,
+"is_public": false,
+"tags": "",
+"tree_id": 2,
+"fork_from_version": "",
+"fork_from_id": null,
+"user": "beiluo"
+}
+}
+```
+
+接口名称：获取服务目录下子目录
+比如你切换工作空间，或者直接通过url进入页面，你需要先调用
+http://127.0.0.1:8080/api/v1/runner/by-name/:user/:name 这个接口获取到工作空间信息，把工作空间当成服务目录的跟节点
+然后这个接口返回的有该工作空间的tree_id，基于这个tree_id调用一次当前获取服务目录下子目录的接口，即可获取到当前工作空间的一级目录，然后
+/api/v1/service-tree/children/:tree_id 这个接口返回的数据都是一个tree列表，下面的id即是tree_id,可以通过判断该接口返回的children_count是否>0来标识是否可以展开目录，
+
+```json
+method:get
+地址：http://127.0.0.1:8080/api/v1/service-tree/children/:tree_id
+响应body示例：
+{
+"code": 0,
+"msg": "成功",
+"data": [
+{
+"id": 6,
+"created_at": "2025-05-05 21:56:06",
+"updated_at": "2025-05-05 23:19:46",
+"created_by": "beiluo",
+"updated_by": "beiluo",
+"deleted_by": "",
+"title": "计算机系相关函数库",
+"name": "csfunction",
+"parent_id": 2,
+"type": "package",
+"tags": "",
+"runner_id": 2,
+"level": 2,
+"sort": 0,
+"full_id_path": "2/6",
+"full_name_path": "qinghuaTools/csfunction",
+"user": "beiluo",
+"children_count": 2,
+"fork_from_id": null
+},
+{
+"id": 7,
+"created_at": "2025-05-05 22:08:54",
+"updated_at": "2025-05-05 22:08:54",
+"created_by": "beiluo",
+"updated_by": "beiluo",
+"deleted_by": "",
+"title": "办公常用函数",
+"name": "office",
+"parent_id": 2,
+"type": "package",
+"tags": "",
+"runner_id": 2,
+"level": 2,
+"sort": 0,
+"full_id_path": "2/7",
+"full_name_path": "qinghuaTools/office",
+"user": "beiluo",
+"children_count": 0,
+"fork_from_id": null
+},
+{
+"id": 8,
+"created_at": "2025-05-05 22:12:43",
+"updated_at": "2025-05-05 22:12:43",
+"created_by": "beiluo",
+"updated_by": "beiluo",
+"deleted_by": "",
+"title": "excel转换相关",
+"name": "excelConv",
+"parent_id": 2,
+"type": "package",
+"tags": "",
+"runner_id": 2,
+"level": 2,
+"sort": 0,
+"full_id_path": "2/8",
+"full_name_path": "qinghuaTools/excelConv",
+"user": "beiluo",
+"children_count": 0,
+"fork_from_id": null
+},
+{
+"id": 9,
+"created_at": "2025-05-05 22:28:43",
+"updated_at": "2025-05-05 22:28:43",
+"created_by": "",
+"updated_by": "",
+"deleted_by": "",
+"title": "数组差异对比",
+"name": "arrayDiff",
+"parent_id": 2,
+"type": "function",
+"tags": "",
+"runner_id": 2,
+"level": 2,
+"sort": 0,
+"full_id_path": "2/9",
+"full_name_path": "qinghuaTools/arrayDiff",
+"user": "beiluo",
+"children_count": 0,
+"fork_from_id": null
+}
+]
+}
+
+```
+
+接口名称：在指定服务目录创建子目录
+
+地址：http://127.0.0.1:8080/api/v1/service-tree
+method:post
+```json
+请求body示例：
+{
+"parent_id":2, //这里的2表示的是在哪个tree下创建的子目录，(tree_id)
+"title":"excel转换相关1111",
+"type":"package", //package 代表创建目录 function表示创建函数
+"name":"excelConv11"
+}
+
+
+响应body示例：
+{
+"code": 0,
+"msg": "成功",
+"data": {
+"id": 22,
+"created_at": "2025-05-06 16:02:07",
+"updated_at": "2025-05-06 16:02:07",
+"created_by": "beiluo",
+"updated_by": "beiluo",
+"deleted_by": "",
+"title": "excel转换相关1111",
+"name": "excelConv11",
+"parent_id": 2,
+"type": "package",
+"tags": "",
+"runner_id": 2,
+"level": 2,
+"sort": 0,
+"full_id_path": "2/22",
+"full_name_path": "qinghuaTools/excelConv11",
+"user": "beiluo",
+"children_count": 0,
+"fork_from_id": null
+}
+}
+
+```
+
+
+接口名称：在指定服务目录下创建函数
+method：post
+地址：http://127.0.0.1:8080/api/v1/runner-func
+```json
+请求body示例：
+{
+"tree_id":2,//tree_id
+"title":"数组差异对比111",
+"name":"arrayDiff1",
+"desc":"数组差异对比,三个参数，a数组，b数组，c分隔符"
+}
+
+响应body示例：
+{
+"code": 0,
+"msg": "成功",
+"data": {
+"id": 5,
+"name": "arrayDiff1",
+"title": "数组差异对比111",
+"runner_id": 2,
+"tree_id": 2,
+"created_at": "2025-05-06T16:05:20.84+08:00"
+}
+}
+
+
+
+
+
+
+
+
+
+
+```
