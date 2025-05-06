@@ -62,6 +62,7 @@ export interface ICreateRunnerFuncParams {
   title: string;
   name: string;
   desc: string;
+  code?: string; // 新增可选的 code 字段，表示函数代码
 }
 
 export interface IWorkspaceCreateParams {

@@ -63,10 +63,12 @@ const newFunc = reactive<{
   title: string;
   name: string;
   desc: string;
+  code?: string;
 }>({
   title: '',
   name: '',
-  desc: ''
+  desc: '',
+  code: ''
 })
 
 // 搜索过滤相关
@@ -459,6 +461,7 @@ const handleCreateFunction = (node: TreeNodeData, e: Event) => {
   newFunc.title = ''
   newFunc.name = ''
   newFunc.desc = ''
+  newFunc.code = ''
   createFuncDialogVisible.value = true
 }
 
@@ -527,7 +530,8 @@ const submitCreateFunction = async () => {
       tree_id: selectedNode.value.id,
       title: newFunc.title.trim(),
       name: newFunc.name.trim(),
-      desc: newFunc.desc.trim()
+      desc: newFunc.desc.trim(),
+      code: newFunc.code?.trim() || undefined
     }
 
     // 调用API创建云函数
@@ -801,6 +805,14 @@ onMounted(async () => {
             type="textarea"
             :rows="4"
             placeholder="请输入函数的详细描述和用途"
+          />
+        </el-form-item>
+        <el-form-item label="函数代码">
+          <el-input
+            v-model="newFunc.code"
+            type="textarea"
+            :rows="6"
+            placeholder="请输入函数代码（可选）"
           />
         </el-form-item>
       </el-form>
