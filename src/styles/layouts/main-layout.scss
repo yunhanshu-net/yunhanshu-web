@@ -1,0 +1,154 @@
+@forward '../variables.scss';
+@use '../variables.scss' as *;
+
+/* 主布局样式 */
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: $background-dark;
+  color: $text-primary;
+  
+  /* 头部样式 */
+  &__header {
+    height: $header-height;
+    background-color: $background-light;
+    border-bottom: 1px solid $border-color;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 $spacing-unit * 3;
+    box-shadow: $shadow-base;
+    position: relative;
+    z-index: 10;
+    
+    &-left {
+      display: flex;
+      align-items: center;
+      flex: 1.5;
+    }
+    
+    &-center {
+      display: flex;
+      justify-content: center;
+      flex: 2;
+    }
+    
+    &-right {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      flex: 1.5;
+    }
+  }
+  
+  /* 主内容区样式 */
+  &__content {
+    flex: 1;
+    overflow-y: auto;
+    background-color: $background-dark;
+    padding: $spacing-unit * 2;
+  }
+  
+  /* Logo区域样式 */
+  &__logo {
+    display: flex;
+    align-items: center;
+    padding: 0 $spacing-unit * 2;
+    height: $header-height;
+    
+    &-img {
+      height: 32px;
+      margin-right: $spacing-unit * 1.5;
+      transition: all 0.3s;
+    }
+    
+    &-text {
+      font-size: 18px;
+      font-weight: bold;
+      color: $primary-color;
+      white-space: nowrap;
+      transition: opacity 0.3s;
+    }
+  }
+  
+  /* 搜索框样式 */
+  &__search {
+    width: 100%;
+    max-width: 500px;
+    
+    .el-input {
+      width: 100%;
+      
+      .el-input__wrapper {
+        background-color: $background-lighter !important;
+        border-color: $border-color !important;
+        box-shadow: none !important;
+        
+        &:hover, &:focus {
+          border-color: $primary-light !important;
+        }
+      }
+      
+      .el-input-group__prepend,
+      .el-input-group__append {
+        background-color: $background-lighter !important;
+        border-color: $border-color !important;
+        color: $text-secondary !important;
+      }
+      
+      .el-select .el-input__wrapper {
+        border-right: none !important;
+      }
+      
+      .el-button {
+        background-color: $background-lighter !important;
+        border-color: $border-color !important;
+        color: $text-secondary !important;
+        
+        &:hover {
+          color: $primary-light !important;
+        }
+      }
+    }
+  }
+  
+  /* 用户操作区样式 */
+  &__user-actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-unit * 2;
+    
+    .user-avatar {
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid $border-color;
+      
+      &:hover {
+        border-color: $primary-color;
+        transform: scale(1.05);
+      }
+    }
+    
+    .action-button {
+      display: flex;
+      align-items: center;
+      gap: $spacing-unit;
+      cursor: pointer;
+      padding: $spacing-unit $spacing-unit * 1.5;
+      border-radius: $border-radius-base;
+      background-color: $background-lighter;
+      color: $text-secondary;
+      transition: all 0.2s;
+      
+      &:hover {
+        background-color: rgba($primary-color, 0.15);
+        color: $primary-light;
+      }
+      
+      .el-icon {
+        font-size: 16px;
+      }
+    }
+  }
+} 

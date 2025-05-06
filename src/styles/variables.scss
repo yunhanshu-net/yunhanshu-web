@@ -1,0 +1,42 @@
+// 主题色变量
+
+// 主色调
+$primary-color: #3C9AE8;
+$primary-light: #67B8FF;
+$primary-dark: #1A7BC7;
+
+// 辅助色
+$success-color: #52C41A;
+$warning-color: #FAAD14;
+$danger-color: #F5222D;
+$info-color: #1890FF;
+
+// 中性色
+$background-dark: #121826;
+$background-light: #1E2233;
+$background-lighter: #262B3C;
+$border-color: #303644;
+$text-primary: #FFFFFF;
+$text-secondary: #A1A7B7;
+$text-disabled: #626675;
+
+// 布局
+$header-height: 60px;
+$sidebar-width: 220px;
+$border-radius-base: 4px;
+$spacing-unit: 8px;
+
+// 阴影
+$shadow-base: 0 2px 10px rgba(0, 0, 0, 0.15);
+$shadow-card: 0 4px 12px rgba(0, 0, 0, 0.2);
+$shadow-dropdown: 0 6px 16px rgba(0, 0, 0, 0.25);
+
+// 过渡
+$transition-base: all 0.3s ease-in-out;
+
+// 断点
+$breakpoint-xs: 576px;
+$breakpoint-sm: 768px;
+$breakpoint-md: 992px;
+$breakpoint-lg: 1200px;
+$breakpoint-xl: 1600px; 
