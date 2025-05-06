@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, reactive, computed } from 'vue'
+import { ref, onMounted, watch, reactive, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {  Search } from '@element-plus/icons-vue'
@@ -110,18 +110,6 @@ const filterTreeNodes = (nodes: TreeNodeData[], keyword: string): TreeNodeData[]
   return result;
 }
 
-// 处理搜索输入变化
-// const handleSearchChange = () => {
-//   if (!searchKeyword.value) {
-//     // 如果搜索关键字为空，重置过滤结果
-//     filteredNodes.value = []
-//     return
-//   }
-//
-//   // 执行搜索
-//   searchNodes(treeData.value, searchKeyword.value.toLowerCase())
-// }
-
 // 搜索节点
 const searchNodes = (nodes: TreeNodeData[], keyword: string) => {
   if (!nodes || nodes.length === 0) return
@@ -193,6 +181,9 @@ const ensureParentExpanded = (node: TreeNodeData) => {
   expandedKeys.value = [...new Set([...expandedKeys.value, ...pathParts])]
 }
 
+// 添加加载锁
+const isLoading = ref(false)
+
 // 从路由获取工作空间信息
 const fetchWorkspaceInfo = async () => {
   const { user, name } = route.params
@@ -209,11 +200,17 @@ const fetchWorkspaceInfo = async () => {
     const workspaceDetail = await workspaceApi.getDetailByName(user as string, name as string)
 
     if (workspaceDetail) {
-      workspace.value = workspaceDetail
-      console.log('获取工作空间详情:', workspace.value)
+      // 检查当前路由是否与工作空间匹配
+      if (workspaceDetail.user === user && workspaceDetail.name === name) {
+        workspace.value = workspaceDetail
+        console.log('获取工作空间详情:', workspace.value)
 
-      // 获取服务目录树
-      fetchServiceTree()
+        // 获取服务目录树
+        await fetchServiceTree()
+      } else {
+        console.warn('工作空间信息与路由不匹配')
+        ElMessage.error('工作空间信息不匹配')
+      }
     } else {
       ElMessage.error('未找到该工作空间')
     }
@@ -227,23 +224,33 @@ const fetchWorkspaceInfo = async () => {
 
 // 获取服务目录树数据
 const fetchServiceTree = async () => {
-  if (!workspace.value) return
-  if (treeLoading.value) return // 防止重复加载
+  if (!workspace.value || isLoading.value) return
 
+  isLoading.value = true
   treeLoading.value = true
-  loadedNodes.value.clear() // 清空已加载节点记录
 
   try {
+    // 完全重置所有状态
+    treeData.value = []
+    loadedNodes.value.clear()
+    expandedKeys.value = []
+    currentNodeKey.value = 0
+    searchKeyword.value = ''
+    filteredNodes.value = []
+
+    // 等待状态重置
+    await nextTick()
+
     // 构建根节点
     const rootNode: TreeNodeData = {
-      id: workspace.value.id,
+      id: workspace.value.tree_id,
       label: `${workspace.value.title} (${workspace.value.name})`,
       name: workspace.value.name,
       type: 'package',
       children: [],
       hasChildren: true,
       item: {
-        id: workspace.value.id,
+        id: workspace.value.tree_id,
         title: workspace.value.title,
         name: workspace.value.name,
         parent_id: 0,
@@ -251,7 +258,7 @@ const fetchServiceTree = async () => {
         runner_id: workspace.value.id,
         level: 1,
         sort: 0,
-        full_id_path: workspace.value.id.toString(),
+        full_id_path: workspace.value.tree_id.toString(),
         full_name_path: workspace.value.name,
         user: workspace.value.user,
         created_at: workspace.value.created_at,
@@ -265,37 +272,51 @@ const fetchServiceTree = async () => {
       isRoot: true
     }
 
+    // 设置根节点
     treeData.value = [rootNode]
+    expandedKeys.value = [workspace.value.tree_id]
 
-    // 设置根节点为默认展开
-    expandedKeys.value = [workspace.value.id]
+    // 等待状态更新
+    await nextTick()
 
-    // 预加载根节点的子节点
-    loadNodeChildren(workspace.value.id)
+    // 加载根节点的子节点
+    const children = await workspaceApi.getServiceTreeChildren(workspace.value.tree_id)
+    const formattedChildren = formatTreeData(children)
+
+    // 更新根节点的子节点
+    if (treeData.value.length > 0) {
+      treeData.value[0].children = formattedChildren
+      treeData.value[0].hasChildren = formattedChildren.length > 0
+    }
+
+    // 标记根节点为已加载
+    loadedNodes.value.add(workspace.value.tree_id)
+
   } catch (error) {
     console.error('初始化服务目录树失败', error)
     ElMessage.error('初始化服务目录树失败')
   } finally {
     treeLoading.value = false
+    isLoading.value = false
   }
 }
 
 // 加载节点的子节点
 const loadNodeChildren = async (nodeId: number): Promise<TreeNodeData[]> => {
+  if (!workspace.value || isLoading.value) return []
+
+  // 如果已经加载过，直接返回缓存的数据
   if (loadedNodes.value.has(nodeId)) {
-    // 如果已经加载过，直接返回缓存的数据
     const findNode = (nodes: TreeNodeData[]): TreeNodeData | null => {
       for (const node of nodes) {
         if (node.id === nodeId) {
           return node
         }
-
         if (node.children && node.children.length > 0) {
           const found = findNode(node.children)
           if (found) return found
         }
       }
-
       return null
     }
 
@@ -303,32 +324,30 @@ const loadNodeChildren = async (nodeId: number): Promise<TreeNodeData[]> => {
     return node?.children || []
   }
 
+  isLoading.value = true
+
   try {
-    // 调用API获取子节点数据
-    console.log(`加载节点 ${nodeId} 的子节点`)
     const children = await workspaceApi.getServiceTreeChildren(nodeId)
     const formattedChildren = formatTreeData(children)
 
-    // 找到父节点并更新其子节点
-    if (nodeId === workspace.value?.id) {
-      // 如果是根节点
+    // 更新节点数据
+    if (nodeId === workspace.value.tree_id) {
       if (treeData.value.length > 0) {
         treeData.value[0].children = formattedChildren
         treeData.value[0].hasChildren = formattedChildren.length > 0
       }
     } else {
-      // 递归查找并更新子节点
       updateNodeChildren(treeData.value, nodeId, formattedChildren)
     }
 
-    // 标记为已加载
     loadedNodes.value.add(nodeId)
-
     return formattedChildren
   } catch (error) {
     console.error('获取子节点失败', error)
     ElMessage.error('获取子节点失败')
     return []
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -534,20 +553,18 @@ const submitCreateFunction = async () => {
 // 监听路由变化，重新加载工作空间信息
 watch(
   () => route.params,
-  (newParams, oldParams) => {
+  async (newParams, oldParams) => {
     // 只有当用户或工作空间名称变化时才重新加载
     if (newParams.user !== oldParams.user || newParams.name !== oldParams.name) {
-      console.log('路由参数变化:', newParams)
       if (newParams.user && newParams.name) {
-        // 重置数据
-        treeData.value = []
-        currentNodeKey.value = 0
-        loadedNodes.value.clear()
-        expandedKeys.value = []
+        // 重置工作空间信息
         workspace.value = null
-
+        
+        // 等待状态重置
+        await nextTick()
+        
         // 重新获取工作空间信息
-        fetchWorkspaceInfo()
+        await fetchWorkspaceInfo()
       }
     }
   },
@@ -566,8 +583,9 @@ watch(searchKeyword, (newVal) => {
   }
 });
 
-onMounted(() => {
-  fetchWorkspaceInfo()
+// 组件挂载时获取工作空间信息
+onMounted(async () => {
+  await fetchWorkspaceInfo()
 })
 </script>
 

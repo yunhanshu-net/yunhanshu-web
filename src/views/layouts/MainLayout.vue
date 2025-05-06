@@ -62,9 +62,21 @@ const fetchWorkspaces = async () => {
     
     // 如果列表不为空且没有当前选中的工作空间，则选择第一个
     if (workspaceList.value.length > 0 && !currentWorkspace.value) {
-      currentWorkspace.value = workspaceList.value[0]
-      // 如果当前路由不是工作空间路由，更新路由
-      updateWorkspaceRoute(currentWorkspace.value)
+      // 检查当前路由是否匹配某个工作空间
+      const { user, name } = route.params
+      const matchedWorkspace = workspaceList.value.find(
+        ws => ws.user === user && ws.name === name
+      )
+
+      if (matchedWorkspace) {
+        // 如果找到匹配的工作空间，使用它
+        currentWorkspace.value = matchedWorkspace
+      } else {
+        // 如果没有找到匹配的工作空间，使用第一个
+        currentWorkspace.value = workspaceList.value[0]
+        // 如果当前路由不是工作空间路由，更新路由
+        updateWorkspaceRoute(currentWorkspace.value)
+      }
     }
   } catch (error) {
     console.error('获取工作空间列表失败', error)
@@ -90,7 +102,8 @@ const updateWorkspaceRoute = (workspace: IWorkspace) => {
     const currentPath = route.path
     const targetPath = `/workspace/${workspace.user}/${workspace.name}`
     
-    if (!currentPath.includes(targetPath)) {
+    // 如果当前路由不是目标工作空间路由，则更新
+    if (currentPath !== targetPath) {
       router.push(targetPath)
     }
   }
