@@ -242,24 +242,25 @@ onMounted(() => {
             </div>
             
             <!-- 工作空间列表 -->
-            <el-dropdown-item 
-              v-else
-              v-for="workspace in workspaceList" 
-              :key="workspace.id" 
-              :command="workspace"
-              :class="{ 'is-active': workspace.id === currentWorkspace.id }"
-            >
-              <div class="workspace-item">
-                <div class="workspace-icon" :style="{ backgroundColor: workspace.color }"></div>
-                <div class="workspace-item-details">
-                  <div class="workspace-item-name">{{ workspace.title }}</div>
-                  <div class="workspace-item-user">{{ workspace.user }}/{{ workspace.name }}</div>
+            <el-scrollbar v-else max-height="400px">
+              <el-dropdown-item 
+                v-for="workspace in workspaceList" 
+                :key="workspace.id" 
+                :command="workspace"
+                :class="{ 'is-active': workspace.id === currentWorkspace.id }"
+              >
+                <div class="workspace-item">
+                  <div class="workspace-icon" :style="{ backgroundColor: workspace.color }"></div>
+                  <div class="workspace-item-details">
+                    <div class="workspace-item-name">{{ workspace.title }}</div>
+                    <div class="workspace-item-user">{{ workspace.user }}/{{ workspace.name }}</div>
+                  </div>
+                  <el-icon v-if="workspace.id === currentWorkspace.id" class="workspace-active-icon">
+                    <i-ep-check />
+                  </el-icon>
                 </div>
-                <el-icon v-if="workspace.id === currentWorkspace.id" class="workspace-active-icon">
-                  <i-ep-check />
-                </el-icon>
-              </div>
-            </el-dropdown-item>
+              </el-dropdown-item>
+            </el-scrollbar>
             
             <div class="workspace-dropdown-footer">
               <el-button type="text" size="small" @click="showCreateWorkspaceDialog = true">
@@ -583,5 +584,13 @@ onMounted(() => {
       margin-bottom: 16px !important;
     }
   }
+}
+
+:deep(.el-scrollbar__wrap) {
+  overflow-x: hidden;
+}
+
+:deep(.el-scrollbar__bar.is-horizontal) {
+  display: none;
 }
 </style>
