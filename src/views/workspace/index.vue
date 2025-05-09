@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, reactive, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import {  Search } from '@element-plus/icons-vue'
+import { Search, View, Star, Coin, CollectionTag, Cpu } from '@element-plus/icons-vue'
 import workspaceApi, {
   IWorkspace,
   IServiceTreeNode,
@@ -23,15 +23,13 @@ import moreIcon from '@/assets/more.png'
 const formatDate = (dateString?: string) => {
   if (!dateString) return '-'
   const date = new Date(dateString)
-  return date.toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  })
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
 // 树节点数据类型定义
@@ -44,6 +42,66 @@ interface TreeNodeData {
   hasChildren: boolean;
   item: IServiceTreeNode;
   isRoot?: boolean;
+}
+
+// 函数详情接口返回的数据类型
+interface IFunctionDetail {
+  id: number
+  created_at: string
+  updated_at: string
+  created_by: string
+  updated_by: string
+  deleted_by: string
+  title: string
+  name: string
+  description: string
+  tags: string
+  request: {
+    children: Array<{
+      code: string
+      desc: string
+      name: string
+      widget: {
+        mode: string
+        type: string
+        widget: string
+        example: string
+        text_limit: string
+        placeholder: string
+        number_limit: string
+        default_value: string
+      }
+      required: boolean
+    }>
+    render_type: string
+  }
+  response: {
+    children: Array<{
+      code: string
+      name: string
+      widget: {
+        mode: string
+        type: string
+        widget: string
+        example: string
+        text_limit: string
+        placeholder: string
+        number_limit: string
+        default_value: string
+      }
+    }>
+    render_type: string
+  }
+  callbacks: string
+  use_tables: string
+  is_public: boolean
+  user: string
+  tree_id: number
+  runner_id: number
+  fork_from_version: string
+  fork_from_id: number | null
+  method: string
+  path: string
 }
 
 // 组件状态
@@ -420,6 +478,9 @@ const loadNode = async (node: any, resolve: (data: TreeNodeData[]) => void) => {
   resolve(children)
 }
 
+// 当前选中的函数详情
+const currentFunction = ref<IFunctionDetail | null>(null)
+
 // 节点点击事件
 const handleNodeClick = async (data: TreeNodeData) => {
   console.log('点击节点:', data)
@@ -427,15 +488,16 @@ const handleNodeClick = async (data: TreeNodeData) => {
     try {
       const response = await workspaceApi.getRunnerFunc(data.id)
       console.log('获取函数信息响应:', response)
-      console.log('函数数据:', response)
       
-      if (workspace.value) {
-        workspace.value.currentFunction = {
-          id: response.id,
-          request: response.request || { children: [] },
-          response: response.response || { children: [] }
+      if (response) {
+        currentFunction.value = response
+        if (workspace.value) {
+          workspace.value.currentFunction = {
+            id: response.id,
+            request: response.request,
+            response: response.response
+          }
         }
-        console.log('更新后的 workspace:', workspace.value)
       }
     } catch (error) {
       console.error('获取函数信息失败:', error)
@@ -771,18 +833,136 @@ onMounted(async () => {
       <!-- 右侧内容区域 -->
       <div class="right-content">
         <div class="content-container">
-          <div class="content-header">
-            <h2>{{ workspace?.title }}</h2>
-            <div class="workspace-path">{{ workspace?.user }} / {{ workspace?.name }}</div>
-          </div>
-
           <div class="content-body">
-            <template v-if="workspace?.currentFunction">
-              <function-renderer
-                :request="workspace.currentFunction.request"
-                :response="workspace.currentFunction.response"
-                @update:model-value="(val) => workspace.currentFunction.requestData = val"
-              />
+            <template v-if="currentFunction">
+              <div class="function-container">
+                <div class="function-renderer">
+                  <!-- 添加函数描述区域 -->
+                  <div class="function-signature">
+                    <div class="signature-title">函数签名</div>
+                    <pre><code>func {{ currentFunction.path.split('/').join('.') }}({{ currentFunction.request.children.map(p => p.name).join(', ') }}) -> {{ currentFunction.response.children.map(p => p.name).join(', ') }}</code></pre>
+                  </div>
+                  <function-renderer
+                    :request="currentFunction.request"
+                    :response="currentFunction.response"
+                    @update:model-value="(val) => workspace.currentFunction.requestData = val"
+                  />
+                </div>
+                <div class="function-info">
+                  <div class="info-header">
+                    <el-row>
+                      <el-col :span="6">
+                        <el-avatar :size="50" src="https://img1.baidu.com/it/u=1465664392,2808406094&fm=253&fmt=auto&app=120&f=JPEG?w=800&h=800" />
+                      </el-col>
+                      <el-col :span="18">
+                        <div>
+                          <span class="author-name">{{ currentFunction.created_by }}</span>
+                          <p class="author-desc">
+                            <el-tooltip
+                              class="box-item"
+                              effect="dark"
+                              :content="currentFunction.description"
+                              placement="top-start"
+                            >
+                              <el-text truncated size="small" class="mx-1">{{ currentFunction.description }}</el-text>
+                            </el-tooltip>
+                          </p>
+                        </div>
+                      </el-col>
+                    </el-row>
+
+                    <el-row class="action-buttons">
+                      <el-col :span="6"></el-col>
+                      <el-col :span="9">
+                        <el-button size="small" type="primary">+ 关注 988</el-button>
+                      </el-col>
+                      <el-col :span="9">
+                        <el-button size="small" type="primary">打赏项目</el-button>
+                      </el-col>
+                    </el-row>
+                  </div>
+
+                  <el-divider border-style="double" />
+
+                  <div class="function-detail">
+                    <h2>{{ currentFunction.title }}</h2>
+                    <el-row class="function-meta">
+                      <el-col :span="24">
+                        <div class="meta-item">
+                          <span class="label">创建时间：</span>
+                          <span class="value">{{ formatDate(currentFunction.created_at) }}</span>
+                        </div>
+                      </el-col>
+                    </el-row>
+
+                    <h3>函数简介</h3>
+                    <el-text size="small" class="mx-1">{{ currentFunction.description }}</el-text>
+
+                    <h3>相关Tag</h3>
+                    <div class="function-tags">
+                      <el-tag 
+                        v-for="tag in (currentFunction.tags || '').split(',')" 
+                        :key="tag"
+                        effect="plain"
+                        class="tag-item"
+                      >
+                        {{ tag }}
+                      </el-tag>
+                    </div>
+
+                    <h3>使用说明</h3>
+                    <div class="function-usage">
+                      <div class="usage-item">
+                        <span class="label">接口路径：</span>
+                        <span class="value">{{ currentFunction.path }}</span>
+                      </div>
+                      <div class="usage-item">
+                        <span class="label">回调函数：</span>
+                        <span class="value">{{ currentFunction.callbacks }}</span>
+                      </div>
+                      <div class="usage-item">
+                        <span class="label">使用数据表：</span>
+                        <span class="value">{{ currentFunction.use_tables }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <el-row class="function-stats">
+                    <el-col :span="6">
+                      <div class="stat-item">
+                        <el-tooltip content="300星标" placement="top-start">
+                          <el-icon><Star /></el-icon>
+                        </el-tooltip>
+                        <span>200</span>
+                      </div>
+                    </el-col>
+                    <el-col :span="6">
+                      <div class="stat-item">
+                        <el-tooltip content="300打赏" placement="top-start">
+                          <el-icon><Coin /></el-icon>
+                        </el-tooltip>
+                        <span>200</span>
+                      </div>
+                    </el-col>
+                    <el-col :span="6">
+                      <div class="stat-item">
+                        <el-tooltip content="300收藏" placement="top-start">
+                          <el-icon><CollectionTag /></el-icon>
+                        </el-tooltip>
+                        <span>200</span>
+                      </div>
+                    </el-col>
+                    <el-col :span="6">
+                      <div class="stat-item">
+                        <el-tooltip content="300次运行" placement="top-start">
+                          <el-icon><Cpu /></el-icon>
+                        </el-tooltip>
+                        <span>200</span>
+                      </div>
+                    </el-col>
+                  </el-row>
+                </div>
+              </div>
             </template>
             <template v-else>
               <div class="welcome-info">
@@ -1048,26 +1228,224 @@ onMounted(async () => {
         display: flex;
         flex-direction: column;
 
-        .content-header {
-          margin-bottom: 24px;
-
-          h2 {
-            margin: 0 0 8px;
-            font-size: 22px;
-            color: #fff;
-          }
-
-          .workspace-path {
-            color: #a1a7b7;
-            font-size: 14px;
-          }
-        }
-
         .content-body {
           flex: 1;
           background-color: #262b3c;
           border-radius: 4px;
           padding: 24px;
+
+          .function-container {
+            display: flex;
+            gap: 24px;
+
+            .function-renderer {
+              flex: 1;
+
+              .function-signature {
+                background-color: #313650;
+                border-radius: 4px;
+                padding: 20px;
+                margin-bottom: 24px;
+
+                .signature-title {
+                  color: #a1a7b7;
+                  font-size: 14px;
+                  margin-bottom: 12px;
+                }
+
+                pre {
+                  margin: 0;
+                  font-family: 'Fira Code', 'Consolas', monospace;
+                  font-size: 16px;
+                  line-height: 1.6;
+                  color: #e0e0e0;
+                  white-space: pre-wrap;
+                  word-break: break-all;
+                  background-color: transparent;
+                  padding: 0;
+
+                  code {
+                    color: #3c9ae8;
+                    font-weight: 500;
+
+                    .parameter-name {
+                      cursor: help;
+                      border-bottom: 1px dashed #3c9ae8;
+                    }
+                  }
+                }
+              }
+            }
+
+            .function-info {
+              width: 300px;
+              background-color: #262b3c;
+              border-radius: 4px;
+              padding: 20px;
+
+              .info-header {
+                .author-name {
+                  font-size: 16px;
+                  color: #e0e0e0;
+                  font-weight: 500;
+                }
+
+                .author-desc {
+                  margin: 6px 0;
+                  color: #a1a7b7;
+                  font-size: 13px;
+                }
+
+                .action-buttons {
+                  margin-top: 12px;
+
+                  .el-button {
+                    background-color: #3c9ae8;
+                    border-color: #3c9ae8;
+                    color: #fff;
+                    font-size: 13px;
+                    padding: 8px 16px;
+                    height: 32px;
+
+                    &:hover {
+                      background-color: #4aa8f5;
+                      border-color: #4aa8f5;
+                    }
+                  }
+                }
+              }
+
+              .el-divider {
+                border-color: #3a3f50;
+                margin: 16px 0;
+              }
+
+              .function-detail {
+                h2 {
+                  font-size: 18px;
+                  color: #e0e0e0;
+                  margin: 16px 0;
+                  font-weight: 500;
+                }
+
+                .function-meta {
+                  color: #a1a7b7;
+                  font-size: 13px;
+                  margin-bottom: 16px;
+
+                  .meta-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+
+                    .label {
+                      color: #a1a7b7;
+                    }
+
+                    .value {
+                      color: #e0e0e0;
+                    }
+
+                    .el-icon {
+                      font-size: 14px;
+                      color: #3c9ae8;
+                    }
+                  }
+                }
+
+                h3 {
+                  font-size: 14px;
+                  color: #e0e0e0;
+                  margin: 16px 0 8px;
+                  font-weight: 500;
+                }
+
+                .el-text {
+                  color: #a1a7b7;
+                  font-size: 13px;
+                  line-height: 1.5;
+                }
+
+                .function-tags {
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 8px;
+                  margin-top: 8px;
+
+                  .el-tag {
+                    background-color: #313650;
+                    border-color: #3a3f50;
+                    color: #a1a7b7;
+                    font-size: 12px;
+                    padding: 0 8px;
+                    height: 24px;
+                    line-height: 22px;
+                    margin: 0;
+
+                    &:hover {
+                      background-color: #3a3f50;
+                    }
+                  }
+                }
+
+                .function-usage {
+                  margin-top: 12px;
+                  background-color: #313650;
+                  border-radius: 4px;
+                  padding: 12px;
+
+                  .usage-item {
+                    display: flex;
+                    margin-bottom: 8px;
+                    font-size: 13px;
+                    line-height: 1.5;
+
+                    &:last-child {
+                      margin-bottom: 0;
+                    }
+
+                    .label {
+                      color: #a1a7b7;
+                      width: 80px;
+                      flex-shrink: 0;
+                    }
+
+                    .value {
+                      color: #e0e0e0;
+                      flex: 1;
+                      word-break: break-all;
+                    }
+                  }
+                }
+              }
+
+              .function-stats {
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid #3a3f50;
+
+                .stat-item {
+                  display: flex;
+                  align-items: center;
+                  gap: 4px;
+                  color: #a1a7b7;
+                  font-size: 13px;
+
+                  .el-icon {
+                    font-size: 16px;
+                    color: #3c9ae8;
+                  }
+
+                  span {
+                    margin-left: 2px;
+                  }
+                }
+              }
+            }
+          }
 
           .welcome-info {
             text-align: center;
