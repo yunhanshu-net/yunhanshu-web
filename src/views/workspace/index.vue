@@ -9,6 +9,7 @@ import workspaceApi, {
   ICreateServiceTreeParams,
   ICreateRunnerFuncParams
 } from '@/api/workspace'
+import type { IFunctionDetail } from '@/types/function'
 import FunctionRenderer from '@/components/FunctionRenderer.vue'
 
 // 导入自定义图标
@@ -42,66 +43,6 @@ interface TreeNodeData {
   hasChildren: boolean;
   item: IServiceTreeNode;
   isRoot?: boolean;
-}
-
-// 函数详情接口返回的数据类型
-interface IFunctionDetail {
-  id: number
-  created_at: string
-  updated_at: string
-  created_by: string
-  updated_by: string
-  deleted_by: string
-  title: string
-  name: string
-  description: string
-  tags: string
-  request: {
-    children: Array<{
-      code: string
-      desc: string
-      name: string
-      widget: {
-        mode: string
-        type: string
-        widget: string
-        example: string
-        text_limit: string
-        placeholder: string
-        number_limit: string
-        default_value: string
-      }
-      required: boolean
-    }>
-    render_type: string
-  }
-  response: {
-    children: Array<{
-      code: string
-      name: string
-      widget: {
-        mode: string
-        type: string
-        widget: string
-        example: string
-        text_limit: string
-        placeholder: string
-        number_limit: string
-        default_value: string
-      }
-    }>
-    render_type: string
-  }
-  callbacks: string
-  use_tables: string
-  is_public: boolean
-  user: string
-  tree_id: number
-  runner_id: number
-  fork_from_version: string
-  fork_from_id: number | null
-  method: string
-  path: string
 }
 
 // 组件状态
@@ -495,7 +436,9 @@ const handleNodeClick = async (data: TreeNodeData) => {
           workspace.value.currentFunction = {
             id: response.id,
             request: response.request,
-            response: response.response
+            response: response.response,
+            path: response.path,
+            requestData: {}
           }
         }
       }
@@ -845,6 +788,7 @@ onMounted(async () => {
                   <function-renderer
                     :request="currentFunction.request"
                     :response="currentFunction.response"
+                    :path="currentFunction.path"
                     @update:model-value="(val) => workspace.currentFunction.requestData = val"
                   />
                 </div>

@@ -1,4 +1,6 @@
 import request from '@/utils/request'
+import type { IFunctionDetail, Request, Response } from '@/types/function'
+import axios from 'axios'
 
 // 工作空间接口类型定义
 export interface IWorkspace {
@@ -13,12 +15,15 @@ export interface IWorkspace {
   user: string;
   status: number;
   is_public: boolean;
-  color?: string; // 用于UI显示的颜tree_id: number;  // 添加 tree_id
+  color?: string; // 用于UI显示的颜色
+  tree_id: number;
   currentFunction?: {  // 添加 currentFunction
     id: number;
-    request: any;
-    response: any;
+    request: Request;
+    response: Response;
     responseData?: any;
+    path: string;
+    requestData?: any;
   };
 }
 
@@ -155,8 +160,39 @@ export const workspaceApi = {
    * @param funcId 函数ID
    * @returns Promise
    */
-  getRunnerFunc(funcId: number): Promise<any> {
+  getRunnerFunc(funcId: number): Promise<IFunctionDetail> {
     return request.get(`/runner-func/tree/${funcId}`);
+  },
+
+  /**
+   * 运行函数
+   * @param path 函数路径
+   * @param method 请求方法
+   * @param params 请求参数
+   * @returns Promise
+   */
+  runFunction(path: string, method: string, params: any): Promise<any> {
+    console.log('运行函数 - 参数:', { path, method, params });
+    
+    // 创建一个新的 axios 实例，不使用拦截器
+    const axiosInstance = axios.create({
+      baseURL: 'http://localhost:8080',
+      timeout: 15000
+    });
+
+    if (method.toLowerCase() === 'get') {
+      return axiosInstance.get(`/function/${path}`, { params })
+        .then(response => {
+          console.log('运行函数 - GET响应:', response.data);
+          return response.data;
+        });
+    }
+    
+    return axiosInstance.post(`/function/${path}`, params)
+      .then(response => {
+        console.log('运行函数 - POST响应:', response.data);
+        return response.data;
+      });
   },
 }
 

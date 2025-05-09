@@ -144,6 +144,7 @@
 
             <!-- 响应参数部分 -->
             <div class="section-title">响应参数</div>
+            
             <el-form-item
               v-for="field in response?.children"
               :key="field.code"
@@ -283,6 +284,26 @@
                 />
               </template>
             </el-form-item>
+
+            <!-- 移动运行信息到这里 -->
+            <div v-if="runInfo.cost" class="run-info">
+              <div class="info-item">
+                <span class="label">执行耗时：</span>
+                <span class="value">{{ runInfo.cost }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">内存消耗：</span>
+                <span class="value">{{ runInfo.memory }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">函数版本：</span>
+                <span class="value">{{ runInfo.version }}</span>
+              </div>
+              <div class="info-item">
+                <span class="label">追踪ID：</span>
+                <span class="value trace-id">{{ runInfo.trace_id }}</span>
+              </div>
+            </div>
           </el-form>
         </el-tab-pane>
 
@@ -383,45 +404,16 @@
 import { ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { TabsPaneContext } from 'element-plus'
+import workspaceApi from '@/api/workspace'
+import type { Widget, Field, Request } from '@/types/function'
 
-interface Widget {
-  mode: string
-  type: string
-  widget: string
-  example: string
-  text_limit: string
-  placeholder: string
-  number_limit: string
-  default_value: string
-  options?: Array<{
-    label: string
-    value: any
-  }>
-  step?: number
-  max?: number
-  allowHalf?: boolean
-  action?: string
-  multiple?: boolean
-  accept?: string
-}
-
-interface Field {
-  code: string
-  desc: string
-  name: string
-  widget: Widget
-  required: boolean
-}
-
-interface Request {
-  children: Field[]
-  render_type: string
-}
-
-const props = defineProps<{
+interface Props {
   request: Request
   response?: Request
-}>()
+  path?: string
+}
+
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: any): void
@@ -430,6 +422,12 @@ const emit = defineEmits<{
 const activeTab = ref('run')
 const formData = ref<Record<string, any>>({})
 const responseData = ref<Record<string, any>>({})
+const runInfo = ref<{
+  cost?: string
+  memory?: string
+  version?: string
+  trace_id?: string
+}>({})
 
 // 监听表单数据变化
 watch(formData, (newValue) => {
@@ -441,7 +439,12 @@ watch(() => props.request, (newRequest) => {
   if (newRequest) {
     const initialData: Record<string, any> = {}
     newRequest.children.forEach(field => {
-      initialData[field.code] = field.widget.default_value || null
+      // 如果是必填字段，设置默认值为空字符串，这样可以触发校验
+      if (field.required) {
+        initialData[field.code] = ''
+      } else {
+        initialData[field.code] = field.widget.default_value || null
+      }
     })
     formData.value = initialData
   }
@@ -458,9 +461,134 @@ watch(() => props.response, (newResponse) => {
   }
 }, { immediate: true })
 
-// 处理运行按钮点击
-const handleRun = () => {
-  ElMessage.info('功能正在开发中，敬请期待...')
+// 修改 handleRun 函数
+const handleRun = async () => {
+  try {
+    if (!props.path) {
+      ElMessage.error('函数路径不能为空')
+      return
+    }
+
+    // 获取请求方法（默认为 POST）
+    const method = props.request.render_type?.toLowerCase() || 'post'
+    
+    // 验证必填字段
+    const requiredFields = props.request.children.filter(field => field.required)
+    for (const field of requiredFields) {
+      const value = formData.value[field.code]
+      if (value === undefined || value === '' || value === null) {
+        ElMessage.error(`请填写${field.name}`)
+        return
+      }
+    }
+
+    // 处理请求数据，进行类型转换和验证
+    const processedData = Object.entries(formData.value).reduce((acc, [key, value]) => {
+      // 找到对应的字段定义
+      const field = props.request.children.find(f => f.code === key)
+      if (!field) return acc
+
+      // 如果是必填字段，值不能为空
+      if (field.required && (value === undefined || value === '' || value === null)) {
+        throw new Error(`请填写${field.name}`)
+      }
+
+      // 如果值不为空，则进行验证和转换
+      if (value !== undefined && value !== '' && value !== null) {
+        // 根据字段类型进行转换和验证
+        switch (field.widget.type) {
+          case 'number':
+            // 数字类型转换和验证
+            const numValue = Number(value)
+            
+            // 验证数值范围
+            if (field.widget.number_limit) {
+              try {
+                // 移除可能的空格并解析
+                const limitStr = field.widget.number_limit.replace(/\s/g, '')
+                const [min, max] = limitStr.slice(1, -1).split(',').map(Number)
+                
+                if (numValue < min || numValue > max) {
+                  throw new Error(`${field.name}必须在${min}到${max}之间`)
+                }
+              } catch (error) {
+                if (error instanceof Error) {
+                  ElMessage.error(error.message)
+                  throw error
+                }
+              }
+            }
+            
+            acc[key] = numValue
+            break
+
+          case 'string':
+            // 字符串类型验证
+            if (field.widget.text_limit) {
+              try {
+                // 移除可能的空格并解析
+                const limitStr = field.widget.text_limit.replace(/\s/g, '')
+                const [min, max] = limitStr.split('-').map(Number)
+                
+                const strValue = String(value)
+                if (strValue.length < min || strValue.length > max) {
+                  throw new Error(`${field.name}长度必须在${min}到${max}个字符之间`)
+                }
+              } catch (error) {
+                if (error instanceof Error) {
+                  ElMessage.error(error.message)
+                  throw error
+                }
+              }
+            }
+            acc[key] = value
+            break
+
+          case 'boolean':
+            acc[key] = Boolean(value)
+            break
+
+          default:
+            acc[key] = value
+        }
+      } else {
+        // 如果值为空，且不是必填字段，则设置为 null
+        acc[key] = null
+      }
+      return acc
+    }, {} as Record<string, any>)
+    
+    // 调用运行函数 API
+    const response = await workspaceApi.runFunction(props.path, method, processedData)
+    console.log('函数运行响应:', response) // 添加日志
+
+    // 处理响应
+    if (response?.code === 0) {
+      // 成功：更新响应数据
+      if (response.data_type === 'form') {
+        // 表单类型：直接更新响应数据
+        responseData.value = response.data
+        // 更新运行信息
+        runInfo.value = {
+          cost: response.meta_data?.cost,
+          memory: response.meta_data?.memory,
+          version: response.meta_data?.version,
+          trace_id: response.trace_id
+        }
+        ElMessage.success(response.msg || '运行成功')
+      } else {
+        // 其他类型：后续可以添加其他类型的处理
+        ElMessage.warning('暂不支持该响应类型')
+      }
+    } else {
+      // 失败：显示错误信息
+      ElMessage.error(response?.msg || '运行失败')
+    }
+  } catch (error) {
+    // 处理错误
+    console.error('运行函数失败:', error)
+    ElMessage.error('运行函数失败，请稍后重试')
+  }
 }
 
 // 获取请求示例数据
@@ -858,6 +986,42 @@ const getExampleValue = (field: Field) => {
 
     &:last-child {
       margin-bottom: 0;
+    }
+  }
+
+  .run-info {
+    margin-bottom: 20px;
+    padding: 16px;
+    background-color: #262b3c;
+    border-radius: 8px;
+    border: 1px solid #3a3f50;
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 14px;
+      line-height: 1.5;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .label {
+        color: #a1a7b7;
+        margin-right: 8px;
+        min-width: 80px;
+      }
+
+      .value {
+        color: #e0e0e0;
+        font-family: monospace;
+
+        &.trace-id {
+          font-size: 12px;
+          color: #8c8c8c;
+        }
+      }
     }
   }
 }

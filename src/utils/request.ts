@@ -36,9 +36,19 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   (response: AxiosResponse) => {
     const res = response.data;
+    console.log('响应拦截器 - 完整响应:', response);
+    console.log('响应拦截器 - 响应数据:', res);
+    console.log('响应拦截器 - 请求URL:', response.config.url);
+
+    // 如果是函数运行接口，直接返回数据
+    if (response.config.url?.startsWith('/function/')) {
+      console.log('函数运行接口 - 直接返回数据:', res);
+      return res;
+    }
 
     // 统一处理返回结果，判断接口调用是否成功
     if (res.code !== 0) {
+      console.log('非函数运行接口 - 请求失败:', res);
       ElMessage({
         message: res.msg || '接口请求失败',
         type: 'error',
@@ -47,6 +57,7 @@ service.interceptors.response.use(
       return Promise.reject(new Error(res.msg || '接口请求失败'));
     }
 
+    console.log('非函数运行接口 - 请求成功:', res);
     return res;
   },
   (error) => {
