@@ -1,6 +1,6 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: true
 ---
 
@@ -330,12 +330,45 @@ method：post
 }
 
 
-
-
-
-
-
-
-
-
 ```
+
+
+
+接口名称：运行函数接口
+method ：对应函数的method
+http://127.0.0.1:8080/function/:path(这里对应函数详情接口返回的path字段)
+当你点击函数时候会获取到函数的详情，
+get请求请把参数以code为key，输入框的值为value放到url的query参数里
+除此之外的请求请以code为key，输入框的值为value放到请求body里
+然后调用下面这个接口
+http://127.0.0.1:8080/function/:path(这里对应函数详情接口返回的path字段)
+
+参考一个请求示例
+
+
+请求方式：post
+请求路径：http://127.0.0.1:8080/function/beiluo/test0001/calc/add
+请求body：
+```json
+{
+    "a":1,
+    "b":2,
+    "desc":"测试",
+    "receiver":"beiluo"
+}
+```
+
+响应body：
+```json
+{
+    "code": 0,//0表示函数运行成功，非0表示失败
+    "msg": "ok", //非0会提示失败原因
+    "data_type": "form",//标识前端需要把结果渲染成表单的格式，后续会扩展其他格式（table，图表等等，）
+    "trace_id": "20250510020013-286f6736-2771-4fc8-8952-b23ef40a6f3a",
+    "meta_data": null,//(现在先不管，后续会返回一写内存占用信息，计算耗时等等元数据信息)
+    "data": { //这里才是返回的用户函数数据
+        "result": 3 //这个对应表单里的response code=result的那个，可以在运行完函数后把data里的结果赋值到response，然后显示出来即可
+    }
+}
+```
+
