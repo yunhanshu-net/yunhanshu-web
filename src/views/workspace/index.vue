@@ -9,6 +9,7 @@ import workspaceApi, {
   ICreateServiceTreeParams,
   ICreateRunnerFuncParams
 } from '@/api/workspace'
+import FunctionRenderer from '@/components/FunctionRenderer.vue'
 
 // 导入自定义图标
 // @ts-ignore - 忽略图片模块的类型检查
@@ -405,13 +406,26 @@ const loadNode = async (node: any, resolve: (data: TreeNodeData[]) => void) => {
 }
 
 // 节点点击事件
-const handleNodeClick = (data: TreeNodeData) => {
-  console.log('节点点击:', data)
-  currentNodeKey.value = data.id
-
-  // 如果是function类型，可以执行相应操作
+const handleNodeClick = async (data: TreeNodeData) => {
+  console.log('点击节点:', data)
   if (data.type === 'function') {
-    ElMessage.info(`准备执行函数: ${data.label}`)
+    try {
+      const response = await workspaceApi.getRunnerFunc(data.id)
+      console.log('获取函数信息响应:', response)
+      console.log('函数数据:', response)
+      
+      if (workspace.value) {
+        workspace.value.currentFunction = {
+          id: response.id,
+          request: response.request || { children: [] },
+          response: response.response || { children: [] }
+        }
+        console.log('更新后的 workspace:', workspace.value)
+      }
+    } catch (error) {
+      console.error('获取函数信息失败:', error)
+      ElMessage.error('获取函数信息失败')
+    }
   }
 }
 
@@ -747,10 +761,20 @@ onMounted(async () => {
         </div>
 
         <div class="content-body">
-          <div class="welcome-info">
-            <h3>欢迎使用工作空间</h3>
-            <p>请从左侧服务目录选择要操作的项目</p>
-          </div>
+          <template v-if="workspace?.currentFunction">
+            <function-renderer
+              v-if="workspace?.currentFunction"
+              :request="workspace.currentFunction.request"
+              :response="workspace.currentFunction.response"
+              @update:model-value="(val) => workspace.currentFunction.requestData = val"
+            />
+          </template>
+          <template v-else>
+            <div class="welcome-info">
+              <h3>欢迎使用工作空间</h3>
+              <p>请从左侧服务目录选择要操作的项目</p>
+            </div>
+          </template>
         </div>
       </div>
     </div>

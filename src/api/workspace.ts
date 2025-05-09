@@ -13,7 +13,13 @@ export interface IWorkspace {
   user: string;
   status: number;
   is_public: boolean;
-  color?: string; // 用于UI显示的颜色
+  color?: string; // 用于UI显示的颜tree_id: number;  // 添加 tree_id
+  currentFunction?: {  // 添加 currentFunction
+    id: number;
+    request: any;
+    response: any;
+    responseData?: any;
+  };
 }
 
 // 服务目录节点类型
@@ -88,7 +94,7 @@ export interface IPaginationResult<T> {
 /**
  * 工作空间相关API
  */
-const workspaceApi = {
+export const workspaceApi = {
   /**
    * 获取工作空间列表
    * @param params 分页参数
@@ -142,7 +148,16 @@ const workspaceApi = {
    */
   createRunnerFunc(data: ICreateRunnerFuncParams): Promise<IRunnerFunc> {
     return request.post('/runner-func', data);
-  }
+  },
+
+  /**
+   * 获取函数信息
+   * @param funcId 函数ID
+   * @returns Promise
+   */
+  getRunnerFunc(funcId: number): Promise<any> {
+    return request.get(`/runner-func/tree/${funcId}`);
+  },
 }
 
 export default workspaceApi 

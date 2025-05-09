@@ -136,7 +136,7 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" class="run-button">运行</el-button>
+          <el-button type="primary" class="run-button" @click="handleRun">运行</el-button>
         </el-form-item>
 
         <!-- 响应参数部分 -->
@@ -287,6 +287,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { ElMessage } from 'element-plus'
 
 interface Widget {
   mode: string
@@ -360,6 +361,11 @@ watch(() => props.response, (newResponse) => {
     responseData.value = initialData
   }
 }, { immediate: true })
+
+// 处理运行按钮点击
+const handleRun = () => {
+  ElMessage.info('功能正在开发中，敬请期待...')
+}
 </script>
 
 <style lang="scss" scoped>
