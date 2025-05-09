@@ -840,7 +840,7 @@ onMounted(async () => {
                   <!-- 添加函数描述区域 -->
                   <div class="function-signature">
                     <div class="signature-title">函数签名</div>
-                    <pre><code>func {{ currentFunction.path.split('/').join('.') }}({{ currentFunction.request.children.map(p => p.name).join(', ') }}) -> {{ currentFunction.response.children.map(p => p.name).join(', ') }}</code></pre>
+                    <pre><code class="signature-code"><span class="keyword">function</span> <span class="function-name">{{ currentFunction.path.split('/').join('.') }}</span>(<span class="parameter">{{ currentFunction.request.children.map(p => p.name).join(', ') }}</span>) <span class="arrow">-></span> <span class="return-type">{{ currentFunction.response.children.map(p => p.name).join(', ') }}</span></code></pre>
                   </div>
                   <function-renderer
                     :request="currentFunction.request"
@@ -1242,35 +1242,44 @@ onMounted(async () => {
               flex: 1;
 
               .function-signature {
-                background-color: #313650;
-                border-radius: 4px;
-                padding: 20px;
                 margin-bottom: 24px;
 
                 .signature-title {
                   color: #a1a7b7;
-                  font-size: 14px;
-                  margin-bottom: 12px;
+                  font-size: 16px;
+                  font-weight: 500;
+                  margin-bottom: 16px;
                 }
 
                 pre {
                   margin: 0;
                   font-family: 'Fira Code', 'Consolas', monospace;
-                  font-size: 16px;
+                  font-size: 18px;
                   line-height: 1.6;
                   color: #e0e0e0;
                   white-space: pre-wrap;
                   word-break: break-all;
                   background-color: transparent;
                   padding: 0;
+                  text-align: left;
 
-                  code {
-                    color: #3c9ae8;
-                    font-weight: 500;
-
-                    .parameter-name {
-                      cursor: help;
-                      border-bottom: 1px dashed #3c9ae8;
+                  .signature-code {
+                    display: block;
+                    text-align: left;
+                    .keyword {
+                      color: #c678dd;  // 关键字颜色（func）
+                    }
+                    .function-name {
+                      color: #61afef;  // 函数名颜色
+                    }
+                    .parameter {
+                      color: #e0e0e0;  // 参数颜色
+                    }
+                    .arrow {
+                      color: #c678dd;  // 箭头颜色
+                    }
+                    .return-type {
+                      color: #98c379;  // 返回值类型颜色
                     }
                   }
                 }
