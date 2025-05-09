@@ -19,6 +19,21 @@ import functionIcon from '@/assets/fx.png'
 // @ts-ignore
 import moreIcon from '@/assets/more.png'
 
+// 格式化日期函数
+const formatDate = (dateString?: string) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  })
+}
+
 // 树节点数据类型定义
 interface TreeNodeData {
   id: number;
@@ -753,28 +768,29 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- 右侧内容区 -->
-      <div class="content-container">
-        <div class="content-header">
-          <h2>{{ workspace?.title }}</h2>
-          <div class="workspace-path">{{ workspace?.user }} / {{ workspace?.name }}</div>
-        </div>
+      <!-- 右侧内容区域 -->
+      <div class="right-content">
+        <div class="content-container">
+          <div class="content-header">
+            <h2>{{ workspace?.title }}</h2>
+            <div class="workspace-path">{{ workspace?.user }} / {{ workspace?.name }}</div>
+          </div>
 
-        <div class="content-body">
-          <template v-if="workspace?.currentFunction">
-            <function-renderer
-              v-if="workspace?.currentFunction"
-              :request="workspace.currentFunction.request"
-              :response="workspace.currentFunction.response"
-              @update:model-value="(val) => workspace.currentFunction.requestData = val"
-            />
-          </template>
-          <template v-else>
-            <div class="welcome-info">
-              <h3>欢迎使用工作空间</h3>
-              <p>请从左侧服务目录选择要操作的项目</p>
-            </div>
-          </template>
+          <div class="content-body">
+            <template v-if="workspace?.currentFunction">
+              <function-renderer
+                :request="workspace.currentFunction.request"
+                :response="workspace.currentFunction.response"
+                @update:model-value="(val) => workspace.currentFunction.requestData = val"
+              />
+            </template>
+            <template v-else>
+              <div class="welcome-info">
+                <h3>欢迎使用工作空间</h3>
+                <p>请从左侧服务目录选择要操作的项目</p>
+              </div>
+            </template>
+          </div>
         </div>
       </div>
     </div>
@@ -1023,43 +1039,49 @@ onMounted(async () => {
       }
     }
 
-    .content-container {
+    .right-content {
       flex: 1;
       padding: 24px;
-      overflow: auto;
 
-      .content-header {
-        margin-bottom: 24px;
+      .content-container {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
 
-        h2 {
-          margin: 0 0 8px;
-          font-size: 22px;
-          color: #fff;
-        }
+        .content-header {
+          margin-bottom: 24px;
 
-        .workspace-path {
-          color: #a1a7b7;
-          font-size: 14px;
-        }
-      }
-
-      .content-body {
-        background-color: #262b3c;
-        border-radius: 4px;
-        padding: 24px;
-
-        .welcome-info {
-          text-align: center;
-          padding: 48px 0;
-
-          h3 {
-            font-size: 20px;
-            margin-bottom: 16px;
+          h2 {
+            margin: 0 0 8px;
+            font-size: 22px;
             color: #fff;
           }
 
-          p {
+          .workspace-path {
             color: #a1a7b7;
+            font-size: 14px;
+          }
+        }
+
+        .content-body {
+          flex: 1;
+          background-color: #262b3c;
+          border-radius: 4px;
+          padding: 24px;
+
+          .welcome-info {
+            text-align: center;
+            padding: 48px 0;
+
+            h3 {
+              font-size: 20px;
+              margin-bottom: 16px;
+              color: #fff;
+            }
+
+            p {
+              color: #a1a7b7;
+            }
           }
         }
       }

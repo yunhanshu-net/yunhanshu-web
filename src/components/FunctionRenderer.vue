@@ -342,50 +342,36 @@
 
         <!-- 参数示例标签页 -->
         <el-tab-pane label="参数示例" name="example">
-          <el-form label-width="auto" class="function-form">
-            <!-- 请求示例部分 -->
-            <div class="section-title">请求示例</div>
-            <el-form-item
-              v-for="field in request.children"
-              :key="field.code"
-              :label="field.name"
-            >
-              <div class="example-value">
-                <template v-if="field.widget.widget === 'select' || field.widget.widget === 'radio' || field.widget.widget === 'checkbox'">
-                  <div class="example-options">
-                    <div class="option" v-for="option in field.widget.options" :key="option.value">
-                      <span class="option-label">{{ option.label }}</span>
-                      <span class="option-value">({{ option.value }})</span>
-                    </div>
+          <el-form label-position="left" label-width="120px">
+            <template v-if="request.children && request.children.length > 0">
+              <div class="example-section">
+                <div class="example-title">请求参数示例</div>
+                <el-form-item
+                  v-for="param in request.children"
+                  :key="param.name"
+                  :label="param.name"
+                >
+                  <div class="example-value">
+                    {{ getExampleValue(param) }}
                   </div>
-                </template>
-                <template v-else>
-                  {{ getExampleValue(field) }}
-                </template>
+                </el-form-item>
               </div>
-            </el-form-item>
+            </template>
 
-            <!-- 响应示例部分 -->
-            <div class="section-title">响应示例</div>
-            <el-form-item
-              v-for="field in response?.children"
-              :key="field.code"
-              :label="field.name"
-            >
-              <div class="example-value">
-                <template v-if="field.widget.widget === 'select' || field.widget.widget === 'radio' || field.widget.widget === 'checkbox'">
-                  <div class="example-options">
-                    <div class="option" v-for="option in field.widget.options" :key="option.value">
-                      <span class="option-label">{{ option.label }}</span>
-                      <span class="option-value">({{ option.value }})</span>
-                    </div>
+            <template v-if="response?.children && response.children.length > 0">
+              <div class="example-section">
+                <div class="example-title">响应参数示例</div>
+                <el-form-item
+                  v-for="param in response.children"
+                  :key="param.name"
+                  :label="param.name"
+                >
+                  <div class="example-value">
+                    {{ getExampleValue(param) }}
                   </div>
-                </template>
-                <template v-else>
-                  {{ getExampleValue(field) }}
-                </template>
+                </el-form-item>
               </div>
-            </el-form-item>
+            </template>
           </el-form>
         </el-tab-pane>
       </el-tabs>
@@ -807,6 +793,71 @@ const getExampleValue = (field: Field) => {
         color: #a1a7b7;
         margin-left: 8px;
       }
+    }
+  }
+
+  .example-section {
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: #262b3c;
+    border-radius: 8px;
+
+    .example-title {
+      font-size: 16px;
+      font-weight: 500;
+      color: #e0e0e0;
+      margin-bottom: 16px;
+      padding-left: 12px;
+      border-left: 4px solid #3c9ae8;
+    }
+
+    :deep(.el-form-item) {
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .el-form-item__label {
+        color: #a1a7b7;
+        font-size: 14px;
+        line-height: 40px;
+        padding-right: 12px;
+      }
+
+      .el-form-item__content {
+        flex: 1;
+        margin-left: 0 !important;
+      }
+    }
+
+    .example-value {
+      min-height: 40px;
+      padding: 12px;
+      background-color: #1a1d2b;
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-family: monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  :deep(.el-form-item__label) {
+    color: #a1a7b7;
+    font-size: 14px;
+    padding-bottom: 8px;
+  }
+
+  :deep(.el-form-item) {
+    margin-bottom: 16px;
+
+    &:last-child {
+      margin-bottom: 0;
     }
   }
 }
