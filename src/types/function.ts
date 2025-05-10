@@ -1,19 +1,15 @@
 // 函数组件相关类型定义
 export interface Widget {
-  mode: string
-  type: string
   widget: string
-  example: string
-  text_limit: string
-  placeholder: string
-  number_limit: string
-  default_value: string
-  options?: Array<{
-    label: string
-    value: any
-  }>
-  step?: number
+  type: string
+  placeholder?: string
+  default_value?: string
+  example?: string
+  options?: string[]
+  mode?: string
+  min?: number
   max?: number
+  step?: number
   allowHalf?: boolean
   action?: string
   multiple?: boolean
@@ -24,8 +20,13 @@ export interface Field {
   code: string
   desc: string
   name: string
-  widget: Widget
+  example: string
   required: boolean
+  callbacks: string
+  validates: string
+  value_type: string
+  widget_type: string
+  widget_config: Widget
 }
 
 export interface Request {

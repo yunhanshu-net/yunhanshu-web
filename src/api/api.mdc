@@ -332,6 +332,141 @@ method：post
 
 ```
 
+接口名称：获取函数详情接口
+method: get
+地址：http://127.0.0.1:8080/api/v1/runner-func/tree/:tree_id
+响应body:
+request里是请求参数的定义，还有定义了这个在界面该渲染成什么组件
+response是定义了返回值，还有渲染成什么组件，每个参数都是一个组件，
+widget_type：是表示这个参数渲染成什么组件，
+widget_config：是每个组件的个性化配置数据（每个组件的配置都不一样，所以要抽象出来，这里没办法写死）
+code：标识运行函数时候以这个code的value为key来传递
+value_type：标识运行函数时候以这个code对应的值应该传递什么类型
+callbacks：是定义了参数的回调事件，比如输入框有OnInputFuzzy这种模糊搜索的事件，如果callbacks存在需要调用callback接口来获取数据（这里目前callback接口还没实现，先不管）
+validates：是完全对应了go的第三方字段验证的这个库：https://github.com/go-playground/validator
+这个比较复杂后续可以慢慢实现
+```json
+{
+    "code": 0,
+    "msg": "成功",
+    "data": {
+        "id": 26,
+        "created_at": "2025-05-08 22:03:37",
+        "updated_at": "2025-05-08 22:03:37",
+        "created_by": "beiluo",
+        "updated_by": "beiluo",
+        "deleted_by": "",
+        "title": "添加计算记录",
+        "name": "add",
+        "description": "添加计算记录",
+        "tags": "数据管理,数据分析,记录管理",
+        "request": {
+            "children": [
+                {
+                    "code": "a",
+                    "desc": "",
+                    "name": "值a",
+                    "example": "100",
+                    "required": true,
+                    "callbacks": "",
+                    "validates": "min=-1000,max=10000",
+                    "value_type": "number",
+                    "widget_type": "input",
+                    "widget_config": {
+                        "mode": "line_text",
+                        "placeholder": "请输入值a",
+                        "default_value": ""
+                    }
+                },
+                {
+                    "code": "b",
+                    "desc": "",
+                    "name": "值b",
+                    "example": "200",
+                    "required": true,
+                    "callbacks": "",
+                    "validates": "min=-1000,max=10000",
+                    "value_type": "number",
+                    "widget_type": "input",
+                    "widget_config": {
+                        "mode": "line_text",
+                        "placeholder": "请输入值b",
+                        "default_value": ""
+                    }
+                },
+                {
+                    "code": "receiver",
+                    "desc": "",
+                    "name": "接收人",
+                    "example": "",
+                    "required": false,
+                    "callbacks": "",
+                    "validates": "",
+                    "value_type": "string",
+                    "widget_type": "select",
+                    "widget_config": {
+                        "options": [
+                            "admin",
+                            "beiluo",
+                            "user"
+                        ],
+                        "default_value": "beiluo"
+                    }
+                },
+                {
+                    "code": "desc",
+                    "desc": "",
+                    "name": "描述",
+                    "example": "",
+                    "required": false,
+                    "callbacks": "OnInputFuzzy",
+                    "validates": "",
+                    "value_type": "string",
+                    "widget_type": "input",
+                    "widget_config": {
+                        "mode": "line_text",
+                        "placeholder": "请描述此次计算",
+                        "default_value": ""
+                    }
+                }
+            ],
+            "render_type": "form"
+        },
+        "response": {
+            "children": [
+                {
+                    "code": "result",
+                    "desc": "",
+                    "name": "计算结果",
+                    "example": "30000",
+                    "required": false,
+                    "callbacks": "",
+                    "validates": "",
+                    "value_type": "",
+                    "widget_type": "input",
+                    "widget_config": {
+                        "mode": "line_text",
+                        "placeholder": "",
+                        "default_value": ""
+                    }
+                }
+            ],
+            "render_type": "form"
+        },
+        "callbacks": "OnPageLoad,OnApiCreated,OnInputValidate",
+        "use_tables": "calc",
+        "is_public": false,
+        "user": "beiluo",
+        "tree_id": 86,
+        "runner_id": 28,
+        "fork_from_version": "",
+        "fork_from_id": null,
+        "method": "POST",
+        "path": "beiluo/test0001/calc/add"
+    }
+}
+```
+
 
 
 接口名称：运行函数接口

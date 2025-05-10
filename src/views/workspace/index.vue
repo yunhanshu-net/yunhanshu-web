@@ -789,7 +789,12 @@ onMounted(async () => {
                     :request="currentFunction.request"
                     :response="currentFunction.response"
                     :path="currentFunction.path"
-                    @update:model-value="(val) => workspace.currentFunction.requestData = val"
+                    :method="currentFunction.method"
+                    @update:model-value="(val) => {
+                      if (workspace?.currentFunction) {
+                        workspace.currentFunction.requestData = val;
+                      }
+                    }"
                   />
                 </div>
                 <div class="function-info">

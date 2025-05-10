@@ -13,127 +13,127 @@
               :label="field.name"
               :required="field.required"
             >
-              <template v-if="field.widget.widget === 'input'">
+              <template v-if="field.widget_type === 'input'">
                 <el-input
                   v-model="formData[field.code]"
-                  :placeholder="field.widget.placeholder || `请输入${field.name}`"
-                  :type="field.widget.type || 'text'"
+                  :placeholder="field.widget_config?.placeholder || `请输入${field.name}`"
+                  :type="field.widget_config?.mode || 'text'"
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'textarea'">
+              <template v-else-if="field.widget_type === 'textarea'">
                 <el-input
                   v-model="formData[field.code]"
                   type="textarea"
                   :rows="4"
-                  :placeholder="field.widget.placeholder || `请输入${field.name}`"
+                  :placeholder="field.widget_config?.placeholder || `请输入${field.name}`"
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'select'">
+              <template v-else-if="field.widget_type === 'select'">
                 <el-select
                   v-model="formData[field.code]"
-                  :placeholder="field.widget.placeholder || `请选择${field.name}`"
+                  :placeholder="field.widget_config?.placeholder || `请选择${field.name}`"
                   style="width: 100%"
                 >
                   <el-option
-                    v-for="option in field.widget.options"
-                    :key="option.value"
-                    :label="option.label"
-                    :value="option.value"
+                    v-for="option in field.widget_config?.options"
+                    :key="option"
+                    :label="option"
+                    :value="option"
                   />
                 </el-select>
               </template>
 
-              <template v-else-if="field.widget.widget === 'radio'">
+              <template v-else-if="field.widget_type === 'radio'">
                 <el-radio-group v-model="formData[field.code]">
                   <el-radio
-                    v-for="option in field.widget.options"
-                    :key="option.value"
-                    :label="option.value"
+                    v-for="option in field.widget_config?.options"
+                    :key="option"
+                    :label="option"
                   >
-                    {{ option.label }}
+                    {{ option }}
                   </el-radio>
                 </el-radio-group>
               </template>
 
-              <template v-else-if="field.widget.widget === 'checkbox'">
+              <template v-else-if="field.widget_type === 'checkbox'">
                 <el-checkbox-group v-model="formData[field.code]">
                   <el-checkbox
-                    v-for="option in field.widget.options"
-                    :key="option.value"
-                    :label="option.value"
+                    v-for="option in field.widget_config?.options"
+                    :key="option"
+                    :label="option"
                   >
-                    {{ option.label }}
+                    {{ option }}
                   </el-checkbox>
                 </el-checkbox-group>
               </template>
 
-              <template v-else-if="field.widget.widget === 'switch'">
+              <template v-else-if="field.widget_type === 'switch'">
                 <el-switch v-model="formData[field.code]" />
               </template>
 
-              <template v-else-if="field.widget.widget === 'date'">
+              <template v-else-if="field.widget_type === 'date'">
                 <el-date-picker
                   v-model="formData[field.code]"
-                  :type="field.widget.type || 'date'"
-                  :placeholder="field.widget.placeholder || `请选择${field.name}`"
+                  :type="field.widget_config?.mode || 'date'"
+                  :placeholder="field.widget_config?.placeholder || `请选择${field.name}`"
                   style="width: 100%"
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'time'">
+              <template v-else-if="field.widget_type === 'time'">
                 <el-time-picker
                   v-model="formData[field.code]"
-                  :placeholder="field.widget.placeholder || `请选择${field.name}`"
+                  :placeholder="field.widget_config?.placeholder || `请选择${field.name}`"
                   style="width: 100%"
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'datetime'">
+              <template v-else-if="field.widget_type === 'datetime'">
                 <el-date-picker
                   v-model="formData[field.code]"
                   type="datetime"
-                  :placeholder="field.widget.placeholder || `请选择${field.name}`"
+                  :placeholder="field.widget_config?.placeholder || `请选择${field.name}`"
                   style="width: 100%"
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'number'">
+              <template v-else-if="field.widget_type === 'number'">
                 <el-input-number
                   v-model="formData[field.code]"
-                  :min="field.widget.number_limit ? JSON.parse(field.widget.number_limit)[0] : undefined"
-                  :max="field.widget.number_limit ? JSON.parse(field.widget.number_limit)[1] : undefined"
-                  :step="field.widget.step || 1"
+                  :min="field.widget_config?.min"
+                  :max="field.widget_config?.max"
+                  :step="field.widget_config?.step || 1"
                   style="width: 100%"
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'slider'">
+              <template v-else-if="field.widget_type === 'slider'">
                 <el-slider
                   v-model="formData[field.code]"
-                  :min="field.widget.number_limit ? JSON.parse(field.widget.number_limit)[0] : undefined"
-                  :max="field.widget.number_limit ? JSON.parse(field.widget.number_limit)[1] : undefined"
-                  :step="field.widget.step || 1"
+                  :min="field.widget_config?.min"
+                  :max="field.widget_config?.max"
+                  :step="field.widget_config?.step || 1"
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'rate'">
+              <template v-else-if="field.widget_type === 'rate'">
                 <el-rate
                   v-model="formData[field.code]"
-                  :max="field.widget.max || 5"
-                  :allow-half="field.widget.allowHalf"
+                  :max="field.widget_config?.max || 5"
+                  :allow-half="field.widget_config?.allowHalf"
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'color'">
+              <template v-else-if="field.widget_type === 'color'">
                 <el-color-picker v-model="formData[field.code]" />
               </template>
 
               <template v-else>
                 <el-input
                   v-model="formData[field.code]"
-                  :placeholder="field.widget.placeholder || `请输入${field.name}`"
+                  :placeholder="field.widget_config?.placeholder || `请输入${field.name}`"
                 />
               </template>
             </el-form-item>
@@ -150,136 +150,136 @@
               :key="field.code"
               :label="field.name"
             >
-              <template v-if="field.widget.widget === 'input'">
+              <template v-if="field.widget_type === 'input'">
                 <el-input
                   v-model="responseData[field.code]"
-                  :placeholder="field.widget.placeholder || `请输入${field.name}`"
-                  :type="field.widget.type || 'text'"
+                  :placeholder="field.widget_config?.placeholder || `请输入${field.name}`"
+                  :type="field.widget_config?.mode || 'text'"
                   disabled
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'textarea'">
+              <template v-else-if="field.widget_type === 'textarea'">
                 <el-input
                   v-model="responseData[field.code]"
                   type="textarea"
                   :rows="4"
-                  :placeholder="field.widget.placeholder || `请输入${field.name}`"
+                  :placeholder="field.widget_config?.placeholder || `请输入${field.name}`"
                   disabled
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'select'">
+              <template v-else-if="field.widget_type === 'select'">
                 <el-select
                   v-model="responseData[field.code]"
-                  :placeholder="field.widget.placeholder || `请选择${field.name}`"
+                  :placeholder="field.widget_config?.placeholder || `请选择${field.name}`"
                   style="width: 100%"
                   disabled
                 >
                   <el-option
-                    v-for="option in field.widget.options"
-                    :key="option.value"
-                    :label="option.label"
-                    :value="option.value"
+                    v-for="option in field.widget_config?.options"
+                    :key="option"
+                    :label="option"
+                    :value="option"
                   />
                 </el-select>
               </template>
 
-              <template v-else-if="field.widget.widget === 'radio'">
+              <template v-else-if="field.widget_type === 'radio'">
                 <el-radio-group v-model="responseData[field.code]" disabled>
                   <el-radio
-                    v-for="option in field.widget.options"
-                    :key="option.value"
-                    :label="option.value"
+                    v-for="option in field.widget_config?.options"
+                    :key="option"
+                    :label="option"
                   >
-                    {{ option.label }}
+                    {{ option }}
                   </el-radio>
                 </el-radio-group>
               </template>
 
-              <template v-else-if="field.widget.widget === 'checkbox'">
+              <template v-else-if="field.widget_type === 'checkbox'">
                 <el-checkbox-group v-model="responseData[field.code]" disabled>
                   <el-checkbox
-                    v-for="option in field.widget.options"
-                    :key="option.value"
-                    :label="option.value"
+                    v-for="option in field.widget_config?.options"
+                    :key="option"
+                    :label="option"
                   >
-                    {{ option.label }}
+                    {{ option }}
                   </el-checkbox>
                 </el-checkbox-group>
               </template>
 
-              <template v-else-if="field.widget.widget === 'switch'">
+              <template v-else-if="field.widget_type === 'switch'">
                 <el-switch v-model="responseData[field.code]" disabled />
               </template>
 
-              <template v-else-if="field.widget.widget === 'date'">
+              <template v-else-if="field.widget_type === 'date'">
                 <el-date-picker
                   v-model="responseData[field.code]"
-                  :type="field.widget.type || 'date'"
-                  :placeholder="field.widget.placeholder || `请选择${field.name}`"
+                  :type="field.widget_config?.mode || 'date'"
+                  :placeholder="field.widget_config?.placeholder || `请选择${field.name}`"
                   style="width: 100%"
                   disabled
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'time'">
+              <template v-else-if="field.widget_type === 'time'">
                 <el-time-picker
                   v-model="responseData[field.code]"
-                  :placeholder="field.widget.placeholder || `请选择${field.name}`"
+                  :placeholder="field.widget_config?.placeholder || `请选择${field.name}`"
                   style="width: 100%"
                   disabled
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'datetime'">
+              <template v-else-if="field.widget_type === 'datetime'">
                 <el-date-picker
                   v-model="responseData[field.code]"
                   type="datetime"
-                  :placeholder="field.widget.placeholder || `请选择${field.name}`"
+                  :placeholder="field.widget_config?.placeholder || `请选择${field.name}`"
                   style="width: 100%"
                   disabled
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'number'">
+              <template v-else-if="field.widget_type === 'number'">
                 <el-input-number
                   v-model="responseData[field.code]"
-                  :min="field.widget.number_limit ? JSON.parse(field.widget.number_limit)[0] : undefined"
-                  :max="field.widget.number_limit ? JSON.parse(field.widget.number_limit)[1] : undefined"
-                  :step="field.widget.step || 1"
+                  :min="field.widget_config?.min"
+                  :max="field.widget_config?.max"
+                  :step="field.widget_config?.step || 1"
                   style="width: 100%"
                   disabled
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'slider'">
+              <template v-else-if="field.widget_type === 'slider'">
                 <el-slider
                   v-model="responseData[field.code]"
-                  :min="field.widget.number_limit ? JSON.parse(field.widget.number_limit)[0] : undefined"
-                  :max="field.widget.number_limit ? JSON.parse(field.widget.number_limit)[1] : undefined"
-                  :step="field.widget.step || 1"
+                  :min="field.widget_config?.min"
+                  :max="field.widget_config?.max"
+                  :step="field.widget_config?.step || 1"
                   disabled
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'rate'">
+              <template v-else-if="field.widget_type === 'rate'">
                 <el-rate
                   v-model="responseData[field.code]"
-                  :max="field.widget.max || 5"
-                  :allow-half="field.widget.allowHalf"
+                  :max="field.widget_config?.max || 5"
+                  :allow-half="field.widget_config?.allowHalf"
                   disabled
                 />
               </template>
 
-              <template v-else-if="field.widget.widget === 'color'">
+              <template v-else-if="field.widget_type === 'color'">
                 <el-color-picker v-model="responseData[field.code]" disabled />
               </template>
 
               <template v-else>
                 <el-input
                   v-model="responseData[field.code]"
-                  :placeholder="field.widget.placeholder || `请输入${field.name}`"
+                  :placeholder="field.widget_config?.placeholder || `请输入${field.name}`"
                   disabled
                 />
               </template>
@@ -323,15 +323,15 @@
                 <div class="param-detail">
                   <div class="param-type">
                     <span class="label">类型：</span>
-                    <span class="value">{{ getTypeLabel(field.widget) }}</span>
+                    <span class="value">{{ getTypeLabel(field) }}</span>
                   </div>
-                  <div class="param-format" v-if="getFormatLabel(field.widget)">
+                  <div class="param-format" v-if="getFormatLabel(field)">
                     <span class="label">格式：</span>
-                    <span class="value">{{ getFormatLabel(field.widget) }}</span>
+                    <span class="value">{{ getFormatLabel(field) }}</span>
                   </div>
-                  <div class="param-default" v-if="field.widget.default_value">
+                  <div class="param-default" v-if="field.widget_config?.default_value">
                     <span class="label">默认值：</span>
-                    <span class="value">{{ field.widget.default_value }}</span>
+                    <span class="value">{{ field.widget_config.default_value }}</span>
                   </div>
                 </div>
               </div>
@@ -349,11 +349,11 @@
                 <div class="param-detail">
                   <div class="param-type">
                     <span class="label">类型：</span>
-                    <span class="value">{{ getTypeLabel(field.widget) }}</span>
+                    <span class="value">{{ getTypeLabel(field) }}</span>
                   </div>
-                  <div class="param-format" v-if="getFormatLabel(field.widget)">
+                  <div class="param-format" v-if="getFormatLabel(field)">
                     <span class="label">格式：</span>
-                    <span class="value">{{ getFormatLabel(field.widget) }}</span>
+                    <span class="value">{{ getFormatLabel(field) }}</span>
                   </div>
                 </div>
               </div>
@@ -444,7 +444,7 @@ watch(() => props.request, (newRequest) => {
       if (field.required) {
         initialData[field.code] = ''
       } else {
-        initialData[field.code] = field.widget.default_value || null
+        initialData[field.code] = field.widget_config?.default_value || null
       }
     })
     formData.value = initialData
@@ -456,7 +456,7 @@ watch(() => props.response, (newResponse) => {
   if (newResponse) {
     const initialData: Record<string, any> = {}
     newResponse.children.forEach(field => {
-      initialData[field.code] = field.widget.default_value || null
+      initialData[field.code] = field.widget_config?.default_value || null
     })
     responseData.value = initialData
   }
@@ -497,20 +497,16 @@ const handleRun = async () => {
       // 如果值不为空，则进行验证和转换
       if (value !== undefined && value !== '' && value !== null) {
         // 根据字段类型进行转换和验证
-        switch (field.widget.type) {
+        switch (field.value_type) {
           case 'number':
             // 数字类型转换和验证
             const numValue = Number(value)
             
             // 验证数值范围
-            if (field.widget.number_limit) {
+            if (field.widget_config?.min || field.widget_config?.max) {
               try {
-                // 移除可能的空格并解析
-                const limitStr = field.widget.number_limit.replace(/\s/g, '')
-                const [min, max] = limitStr.slice(1, -1).split(',').map(Number)
-                
-                if (numValue < min || numValue > max) {
-                  throw new Error(`${field.name}必须在${min}到${max}之间`)
+                if (numValue < (field.widget_config?.min || -Infinity) || numValue > (field.widget_config?.max || Infinity)) {
+                  throw new Error(`${field.name}必须在${field.widget_config?.min || '最小值'}到${field.widget_config?.max || '最大值'}之间`)
                 }
               } catch (error) {
                 if (error instanceof Error) {
@@ -525,16 +521,18 @@ const handleRun = async () => {
 
           case 'string':
             // 字符串类型验证
-            if (field.widget.text_limit) {
+            if (field.validates) {
               try {
-                // 移除可能的空格并解析
-                const limitStr = field.widget.text_limit.replace(/\s/g, '')
-                const [min, max] = limitStr.split('-').map(Number)
-                
-                const strValue = String(value)
-                if (strValue.length < min || strValue.length > max) {
-                  throw new Error(`${field.name}长度必须在${min}到${max}个字符之间`)
-                }
+                const validates = field.validates.split(',')
+                validates.forEach(validate => {
+                  const [key, value] = validate.split('=')
+                  if (key === 'min' || key === 'max') {
+                    const strValue = String(value)
+                    if (strValue.length < Number(key === 'min' ? value : -Infinity) || strValue.length > Number(key === 'max' ? value : Infinity)) {
+                      throw new Error(`${field.name}长度必须在${key === 'min' ? value : '最小值'}到${key === 'max' ? value : '最大值'}个字符之间`)
+                    }
+                  }
+                })
               } catch (error) {
                 if (error instanceof Error) {
                   ElMessage.error(error.message)
@@ -596,14 +594,14 @@ const handleRun = async () => {
 const getExampleRequest = () => {
   const example: Record<string, any> = {}
   props.request.children.forEach(field => {
-    if (field.widget.example) {
+    if (field.example) {
       try {
-        example[field.code] = JSON.parse(field.widget.example)
+        example[field.code] = JSON.parse(field.example)
       } catch {
-        example[field.code] = field.widget.example
+        example[field.code] = field.example
       }
     } else {
-      example[field.code] = field.widget.default_value || null
+      example[field.code] = field.widget_config?.default_value || null
     }
   })
   return example
@@ -613,21 +611,21 @@ const getExampleRequest = () => {
 const getExampleResponse = () => {
   const example: Record<string, any> = {}
   props.response?.children.forEach(field => {
-    if (field.widget.example) {
+    if (field.example) {
       try {
-        example[field.code] = JSON.parse(field.widget.example)
+        example[field.code] = JSON.parse(field.example)
       } catch {
-        example[field.code] = field.widget.example
+        example[field.code] = field.example
       }
     } else {
-      example[field.code] = field.widget.default_value || null
+      example[field.code] = field.widget_config?.default_value || null
     }
   })
   return example
 }
 
-// 在 script setup 部分添加新的方法
-const getTypeLabel = (widget: Widget) => {
+// 修改 getTypeLabel 方法
+const getTypeLabel = (field: Field) => {
   const typeMap: Record<string, string> = {
     string: '文本',
     text: '文本',
@@ -639,35 +637,32 @@ const getTypeLabel = (widget: Widget) => {
     array: '数组',
     object: '对象'
   }
-  return typeMap[widget.type] || '文本'
+  return typeMap[field.value_type] || '文本'
 }
 
-const getFormatLabel = (widget: Widget) => {
+// 修改 getFormatLabel 方法
+const getFormatLabel = (field: Field) => {
   const formatLabels: string[] = []
   
-  if (widget.text_limit) {
-    try {
-      const [min, max] = JSON.parse(widget.text_limit)
-      formatLabels.push(`长度${min}-${max}字符`)
-    } catch {}
+  if (field.validates) {
+    const validates = field.validates.split(',')
+    validates.forEach(validate => {
+      const [key, value] = validate.split('=')
+      if (key === 'min' || key === 'max') {
+        formatLabels.push(`${key === 'min' ? '最小' : '最大'}值: ${value}`)
+      }
+    })
   }
   
-  if (widget.number_limit) {
-    try {
-      const [min, max] = JSON.parse(widget.number_limit)
-      formatLabels.push(`范围${min}-${max}`)
-    } catch {}
+  if (field.widget_config?.step) {
+    formatLabels.push(`步长${field.widget_config.step}`)
   }
   
-  if (widget.step) {
-    formatLabels.push(`步长${widget.step}`)
-  }
-  
-  if (widget.type === 'date') {
+  if (field.value_type === 'date') {
     formatLabels.push('YYYY-MM-DD')
-  } else if (widget.type === 'time') {
+  } else if (field.value_type === 'time') {
     formatLabels.push('HH:mm:ss')
-  } else if (widget.type === 'datetime') {
+  } else if (field.value_type === 'datetime') {
     formatLabels.push('YYYY-MM-DD HH:mm:ss')
   }
   
@@ -676,17 +671,17 @@ const getFormatLabel = (widget: Widget) => {
 
 // 修改 getExampleValue 方法
 const getExampleValue = (field: Field) => {
-  if (field.widget.example) {
+  if (field.example) {
     try {
-      const value = JSON.parse(field.widget.example)
+      const value = JSON.parse(field.example)
       return typeof value === 'object' ? JSON.stringify(value, null, 2) : value
     } catch {
-      return field.widget.example
+      return field.example
     }
   }
   
   // 根据类型返回默认示例
-  switch (field.widget.widget) {
+  switch (field.widget_type) {
     case 'date':
       return '2024-03-20'
     case 'time':
@@ -702,7 +697,7 @@ const getExampleValue = (field: Field) => {
     case 'color':
       return '#000000'
     default:
-      return field.widget.default_value || '无示例值'
+      return field.widget_config?.default_value || '无示例值'
   }
 }
 </script>
@@ -827,19 +822,6 @@ const getExampleValue = (field: Field) => {
       .el-radio,
       .el-checkbox {
         color: #e0e0e0;
-      }
-
-      .el-switch__core {
-        background-color: #3a3f50;
-        border-color: #3a3f50;
-      }
-
-      .el-slider__runway {
-        background-color: #3a3f50;
-      }
-
-      .el-rate__icon {
-        color: #3a3f50;
       }
 
       .run-button {
