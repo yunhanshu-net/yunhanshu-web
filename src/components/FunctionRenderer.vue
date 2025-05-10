@@ -411,6 +411,7 @@ interface Props {
   request: Request
   response?: Request
   path?: string
+  method?: string
 }
 
 const props = defineProps<Props>()
@@ -470,7 +471,7 @@ const handleRun = async () => {
     }
 
     // 获取请求方法（默认为 POST）
-    const method = props.request.render_type?.toLowerCase() || 'post'
+    const method = props.method?.toLowerCase() || 'post'
     
     // 验证必填字段
     const requiredFields = props.request.children.filter(field => field.required)
@@ -628,21 +629,17 @@ const getExampleResponse = () => {
 // 在 script setup 部分添加新的方法
 const getTypeLabel = (widget: Widget) => {
   const typeMap: Record<string, string> = {
-    input: '文本',
-    textarea: '多行文本',
-    select: '选择',
-    radio: '单选',
-    checkbox: '多选',
-    switch: '开关',
+    string: '文本',
+    text: '文本',
+    number: '数字',
+    boolean: '布尔值',
     date: '日期',
     time: '时间',
     datetime: '日期时间',
-    number: '数字',
-    slider: '滑块',
-    rate: '评分',
-    color: '颜色'
+    array: '数组',
+    object: '对象'
   }
-  return typeMap[widget.widget] || widget.type || '文本'
+  return typeMap[widget.type] || '文本'
 }
 
 const getFormatLabel = (widget: Widget) => {
